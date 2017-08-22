@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <title>calculator</title>
+
+    {% include 'base/css.html' %}
+  </head>
+  <body>
+
+    <div class='container'>
+    {% block content %}
+    {% endblock content %}
+    </div>
+    {% include 'base/js.html' %}
+    <script>
+    $(document).ready(function(){
+
+    })
+    {% block jquery %}{% endblock %}
+    </script>
+  </body>
+</html>

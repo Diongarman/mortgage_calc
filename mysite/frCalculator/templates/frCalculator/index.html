@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+
+{% block jquery %}
+{% endblock %}
+
+{% block content %}
+
+<form id="mortgage_form" method="post" onsubmit="return false;">
+
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="home_price">Home Price</label>
+    <input type="number" class="form-control" id="home_price" name="home_price" placeholder="enter house price"/>
+  </div>
+  <div class="form-group">
+    <label for="deposit_percent">Deposit Percent</label>
+    <input type="number" class="form-control" id="deposit_percent" name="deposit_percent" placeholder="enter deposit percentage" step=".0001"/>
+  </div>
+  <div class="form-group">
+    <label for="interest_rate">Interest Rate</label>
+    <input type="number" class="form-control" id="interest_rate" name="interest_rate" placeholder="enter interest rate" step=".0001"/>
+  </div>
+  <div class="form-group">
+    <label for="loan_term">Loan Term</label>
+    <input type="number" class="form-control" id="loan_term" name="loan_term" placeholder="enter length of loan in years"/>
+  </div>
+    <button type="updateButton" onclick="formButton()">Submit</button>
+</form>
+
+<script type="text/javascript">
+
+
+  function formButton() {
+
+    $.ajax({
+      type:'POST',
+      url: 'http://127.0.0.1:8000/frCalculator/calculation/',
+      dataType: "json",
+      async: true,
+      data: {
+            home_price: $("#home_price").val(),
+            deposit_percent: $("#deposit_percent").val(),
+            interest_rate: $("#interest_rate").val(),
+            loan_term: $("#loan_term").val(),
+            csrfmiddlewaretoken: "{{csrf_token}}"
+},
+    success: function(data){
+
+
+
+        $('#example').DataTable( {
+        data: data.monthly_schedule,
+        columns: [
+            { title: "Monthly Payment" },
+            { title: "Interest Accrued" },
+            { title: "Principal_payment" },
+            { title: "Pre-Payment Balance" },
+            { title: "Loan Balance" }
+        ]
+    } );
+
+Highcharts.chart('container', {
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: null,
+        plotShadow: false,
+        type: 'pie'
+    },
+    title: {
+        text: 'Browser market shares January, 2015 to May, 2015'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                style: {
+                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                }
+            }
+        }
+    },
+    series: [{
+        name: 'Total Repayment',
+        colorByPoint: true,
+        data: [{
+            name: 'Principal',
+            y: data.total_principal
+        }, {
+            name: 'Interest',
+            y: data.total_interest,
+            sliced: true,
+            selected: true
+        }]
+    }]
+});
+
+
+
+var interest = [];
+var principal = [];
+
+data.monthly_schedule.forEach(function(element) {
+    interest.push(element[1]);
+    principal.push(element[2]);
+});
+
+
+Highcharts.chart('container2', {
+    chart: {
+        type: 'area'
+    },
+    title: {
+        text: 'Average fruit consumption during one week'
+    },
+    legend: {
+        layout: 'vertical',
+        align: 'left',
+        verticalAlign: 'top',
+        x: 150,
+        y: 100,
+        floating: true,
+        borderWidth: 1,
+        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+    },
+
+
+    xAxis: {
+
+
+    },
+    yAxis: {
+        title: {
+            text: 'Fruit units'
+        }
+    },
+    tooltip: {
+        shared: true,
+        valueSuffix: ' units'
+    },
+    credits: {
+        enabled: false
+    },
+    plotOptions: {
+        series: {
+            stacking: 'percent'
+        }
+    },
+
+    
+    series: [{
+        name: 'interest',
+        data: interest
+    }, {
+        name: 'Principal',
+        data: principal
+    }]
+});
+
+
+      }
+  });
+}
+
+</script>
+
+<table id="example" class="display" width="100%"></table>
+
+<div id="container" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+
+<div id="container2" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+
+
+{% endblock content %}
+
